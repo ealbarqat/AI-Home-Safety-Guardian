@@ -23,11 +23,11 @@
 
 Independent living for elderly populations is increasingly prioritized across Europe, particularly in Luxembourg where rural elderly communities face challenges in accessing immediate care. According to Luxembourg's national statistics (STATEC), approximately 19.5% of the population is over 65 years, with many residing in dispersed rural areas. This project proposes an AI-powered home safety monitoring system that integrates Internet of Things (IoT) sensors with machine learning algorithms to predict and prevent domestic accidents among seniors living alone.
 
-The system employs non-intrusive environmental sensors—temperature, gas detection, passive infrared (PIR) motion sensors, and electricity consumption monitors—to analyze behavioral patterns. Through time-series analysis using Long Short-Term Memory (LSTM) networks and Gated Recurrent Units (GRU), the system establishes individualized behavioral baselines. Anomaly detection algorithms including Isolation Forest, One-Class Support Vector Machines (OC-SVM), and Autoencoders identify deviations indicating potential emergencies such as falls, forgotten appliances, or unusual inactivity periods.
+The system employs non-intrusive environmental sensors—temperature, gas detection, motion sensors, and electricity consumption monitors—to analyze behavioral patterns without compromising privacy. The system learns each person's normal daily routines over 4-6 weeks using AI models (LSTM networks) to establish personalized baselines. Anomaly detection algorithms then continuously monitor for deviations from these baselines, identifying potential emergencies such as falls, forgotten appliances, or unusual inactivity periods.
 
-The proposed methodology employs a three-tier architecture: (1) edge computing for local sensor data processing, (2) cloud-based storage and advanced analytics, and (3) real-time alert generation via multi-level notification systems. This solution addresses the growing need for non-intrusive, privacy-preserving care assistance in the Greater Region, while maintaining elderly autonomy and dignity through GDPR-compliant data handling and transparency mechanisms.
+The proposed methodology employs a simple three-layer architecture: (1) sensors in the home that collect environmental data, (2) cloud-based AI processing that analyzes patterns and detects anomalies, and (3) alert systems that notify family members and caregivers via email, SMS, or phone calls. This solution addresses the growing need for non-intrusive, privacy-preserving care assistance in the Greater Region, while maintaining elderly autonomy and dignity through GDPR-compliant data handling.
 
-**Keywords:** Elderly Care, IoT, Anomaly Detection, Predictive Analytics, Home Safety, Luxembourg, GDPR-Compliant Monitoring, LSTM, Time-Series Analysis
+**Keywords:** Elderly Care, IoT, Anomaly Detection, Predictive Analytics, Home Safety, Luxembourg, GDPR-Compliant Monitoring
 
 ---
 
@@ -189,241 +189,151 @@ The most common home accidents among elderly populations include: falls (account
 
 ### 5.1 System Architecture
 
-The system employs a hierarchical architecture with three distinct layers:
+The system employs a simple three-layer architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    IoT Sensor Layer (Edge)                       │
-│  • DHT22 Temperature/Humidity Sensors (kitchen, bedroom)       │
-│  • PIR Motion Sensors (living room, hallway, bathroom)          │
-│  • MQ-2/MQ-5 Gas Detection Sensors (kitchen)                    │
-│  • TP-Link HS110 Smart Plugs (stove, refrigerator, TV)         │
-│  • Communication: WiFi 802.11n, sampling rate: 1 Hz            │
+│                    LAYER 1: SENSORS (Home)                      │
+│  • Temperature sensors (kitchen, bedroom)                        │
+│  • Motion sensors (living room, hallway)                       │
+│  • Gas detection sensors (kitchen)                              │
+│  • Electricity monitors (smart plugs on appliances)             │
+│  • Edge device (Raspberry Pi) collects sensor data            │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│              Edge Computing & Preprocessing Layer                 │
-│  Hardware: Raspberry Pi 4 (4GB RAM, Quad-core CPU)             │
-│  • Real-time data acquisition (Python, paho-mqtt library)      │
-│  • Local preprocessing: normalization, missing value imputation │
-│  • Feature extraction: temporal windows (15-min, 1-hour, 24-hour)│
-│  • Edge inference: Lightweight anomaly detection models        │
-│  • Data encryption: AES-256 before cloud transmission          │
+│              LAYER 2: AI PROCESSING (Cloud)                      │
+│  • Data sent securely to Luxembourg-based cloud                 │
+│  • AI models analyze patterns and detect anomalies              │
+│  • Risk scoring: calculates probability of emergency            │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│              Cloud Storage & Advanced Analytics Layer            │
-│  Infrastructure: Luxembourg-based cloud (AWS EU-Central-1)     │
-│  • Secure data storage: encrypted PostgreSQL database           │
-│  • Time-series database: InfluxDB for sensor data              │
-│  • Model training: GPU-enabled instances (NVIDIA T4)           │
-│  • Batch processing: historical pattern analysis                │
-│  • API endpoints: RESTful services for dashboard access         │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                 Decision & Alert System Layer                   │
-│  • Risk scoring engine: ensemble of anomaly detection models    │
-│  • Multi-level alerts: Low (email), Medium (SMS), High (call)   │
-│  • Notification channels: Twilio SMS API, SendGrid email       │
-│  • Dashboard: React.js web app, React Native mobile app        │
-│  • Integration: Emergency services API (future consideration)  │
+│                 LAYER 3: ALERTS (Notifications)                 │
+│  • Multi-level alerts: Email, SMS, or Phone Call               │
+│  • Dashboard for families/caregivers to monitor status         │
+│  • Real-time notifications when anomalies detected             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ### 5.2 AI/ML Components
 
-#### 5.2.1 Time-Series Pattern Learning
+#### 5.2.1 Pattern Learning
 
-**LSTM Network Architecture:**
-- **Purpose:** Learn temporal dependencies in daily activity patterns
-- **Architecture:** 
-  - Input layer: 24-hour sliding window (1440 timesteps, 4 features: temp, motion, electricity, gas_binary)
-  - LSTM layer 1: 128 units with dropout (0.2)
-  - LSTM layer 2: 64 units with dropout (0.2)
-  - Dense layer: 32 units, ReLU activation
-  - Output layer: 4 units (predicted values for each sensor)
-- **Training:** 
-  - Baseline period: 4-6 weeks of continuous data collection
-  - Loss function: Mean Squared Error (MSE)
-  - Optimizer: Adam (learning rate: 0.001)
-  - Batch size: 32, epochs: 100 with early stopping
-- **Implementation:** TensorFlow 2.12, Keras API
+**How It Works:**
+- The system learns each person's normal daily patterns over 4-6 weeks
+- Uses **LSTM (Long Short-Term Memory)** networks to understand:
+  - When they typically wake up and go to sleep
+  - Normal movement patterns throughout the day
+  - Typical electricity usage (cooking times, TV watching, etc.)
+  - Normal temperature variations in the home
 
-**GRU Alternative:**
-- Similar architecture to LSTM but using Gated Recurrent Units (faster training, comparable performance)
-- 96 units per layer (fewer parameters than LSTM)
-- Used for comparison in ensemble approach
+**Purpose:** Establish a personalized baseline of "normal" behavior for each elderly person.
 
-#### 5.2.2 Anomaly Detection Algorithms
+#### 5.2.2 Anomaly Detection
 
-**1. Isolation Forest:**
-- **Purpose:** Detect outliers in multi-dimensional sensor data without requiring labeled anomaly data
-- **Parameters:** 
-  - Number of estimators: 100
-  - Max samples: 256
-  - Contamination rate: 0.05 (5% expected anomaly rate)
-- **Implementation:** scikit-learn IsolationForest
-- **Advantage:** Unsupervised learning, handles high-dimensional data efficiently
-
-**2. One-Class Support Vector Machine (OC-SVM):**
-- **Purpose:** Learn decision boundary around normal behavior, flag deviations
-- **Parameters:**
-  - Kernel: Radial Basis Function (RBF)
-  - Nu: 0.05 (upper bound on fraction of outliers)
-  - Gamma: 'scale' (automatic kernel coefficient scaling)
-- **Implementation:** scikit-learn OneClassSVM
-- **Advantage:** Flexible kernel selection, handles non-linear patterns
-
-**3. Autoencoder (Deep Learning):**
-- **Purpose:** Learn compressed representation of normal patterns; high reconstruction error indicates anomalies
-- **Architecture:**
-  - Encoder: Input (1440, 4) → Dense(512, ReLU) → Dense(256, ReLU) → Latent(128)
-  - Decoder: Latent(128) → Dense(256, ReLU) → Dense(512, ReLU) → Output(1440, 4)
-  - Loss: Mean Absolute Error (MAE) - more robust to outliers than MSE
-  - Threshold: 95th percentile of reconstruction error on validation set
-- **Implementation:** TensorFlow/Keras
-- **Advantage:** Captures complex non-linear patterns, unsupervised feature learning
+**How It Works:**
+- The system continuously compares current sensor readings to the learned baseline
+- Uses **anomaly detection algorithms** to identify when something is unusual:
+  - **Isolation Forest:** Detects outliers in the data
+  - **One-Class SVM:** Learns what's normal and flags deviations
+  - **Autoencoders:** Learns compressed patterns and detects when patterns don't match
 
 **Ensemble Approach:**
-- Combine predictions from all three methods
-- Voting mechanism: Anomaly if ≥2 models flag event as anomalous
-- Weighted scoring: Isolation Forest (0.4), OC-SVM (0.3), Autoencoder (0.3)
-- Final risk score: Normalized to 0-1 scale (0.8+ triggers high-priority alert)
+- Combines all three methods for more reliable detection
+- If multiple methods agree something is unusual, an alert is generated
+- Reduces false alarms while maintaining high detection accuracy
 
-#### 5.2.3 Predictive Risk Modeling
+#### 5.2.3 Risk Scoring
 
-**Composite Risk Score Calculation:**
-```
-Risk_Score = α₁ × Motion_Anomaly + α₂ × Temperature_Anomaly + 
-             α₃ × Electricity_Anomaly + α₄ × Temporal_Deviation
+**How It Works:**
+- Combines information from all sensors to calculate a risk score (0-1 scale)
+- Factors considered:
+  - Motion patterns (unusual inactivity?)
+  - Temperature (too hot/cold?)
+  - Electricity usage (forgotten appliance?)
+  - Time of day (unusual activity at odd hours?)
 
-Where:
-- Motion_Anomaly: Binary (0/1) or continuous score from ensemble
-- Temperature_Anomaly: Normalized deviation from baseline (±2°C threshold)
-- Electricity_Anomaly: Duration of high consumption without movement (hours)
-- Temporal_Deviation: Time-of-day mismatch with baseline pattern
-- α₁=0.4, α₂=0.2, α₃=0.2, α₄=0.2 (weights learned from validation set)
-```
-
-**Early Warning System:**
-- Monitor trend changes over 15-minute, 1-hour, and 24-hour windows
-- Flag gradual pattern shifts before critical events occur
-- Example: Decreasing activity levels over 3 days may indicate health decline
+**Alert Levels:**
+- **Low (0.6-0.7):** Email notification
+- **Medium (0.7-0.8):** SMS notification
+- **High (>0.8):** SMS + Phone call
 
 ### 5.3 Detection Logic for Specific Use Cases
 
 #### Use Case 1: Fall Detection
 
-**Detection Algorithm:**
-1. Monitor PIR motion sensors in common areas (living room, hallway, kitchen)
-2. Baseline: Average movement events per hour during active periods (typically 6-22:00)
-3. Anomaly trigger:
-   - Sudden cessation: No movement detected for >30 minutes during active period
-   - AND: Last movement was in common area (not bedroom)
-   - AND: Current time is not within normal sleep window (baseline ±2 hours)
-4. Confirmation: Cross-check with electricity consumption (no appliance activity)
-5. Alert generation: High-priority alert if all conditions met
+**How It Works:**
+- Motion sensors monitor activity in common areas (living room, hallway, kitchen)
+- System learns normal movement patterns (when person is typically active)
+- **Alert Trigger:** If no movement detected for >30 minutes during normal active hours
+- **Confirmation:** Cross-checks with electricity usage (no appliance activity)
+- **Result:** High-priority alert sent to family/caregivers
 
-**Expected Performance:**
-- True Positive Rate: 92% (based on literature)
-- False Positive Rate: <3% (tuned via threshold optimization)
+**Expected Performance:** >90% detection accuracy
 
 #### Use Case 2: Forgotten Stove/Appliance Detection
 
-**Detection Algorithm:**
-1. Monitor smart plug on stove (if applicable) OR kitchen electricity consumption
-2. Baseline: Average electricity consumption patterns for cooking periods
-3. Anomaly trigger:
-   - High electricity consumption (>1500W) for >2 hours continuously
-   - AND: No corresponding motion sensor activity in kitchen for >30 minutes
-   - AND: Temperature sensor in kitchen shows elevated readings (>25°C above ambient)
-4. Gas sensor confirmation: If MQ-2 sensor detects gas, immediate high-priority alert
-5. Alert generation: Medium-priority alert initially, escalates to high if gas detected
+**How It Works:**
+- Electricity monitor tracks kitchen appliance usage
+- Temperature sensor monitors kitchen temperature
+- Motion sensor checks if person is in kitchen
+- **Alert Trigger:** High electricity usage + elevated temperature + no movement in kitchen for >30 minutes
+- **Gas Detection:** If gas sensor detects gas, immediate high-priority alert
+- **Result:** Medium-priority alert (escalates to high if gas detected)
+
+**Expected Performance:** >95% detection accuracy
 
 #### Use Case 3: Unusual Inactivity Detection
 
-**Detection Algorithm:**
-1. Establish daily activity baseline using LSTM network:
-   - Movement events per hour (hourly bins)
-   - Electricity usage patterns
-   - Temporal features: time-of-day, day-of-week
-2. Real-time monitoring: Compare current 24-hour window to predicted baseline
-3. Anomaly trigger:
-   - Activity level <50% of predicted baseline for >6 hours
-   - OR: No movement detected for >8 hours (excluding sleep hours)
-4. Contextual validation: Check if deviation is consistent with known patterns (illness, travel)
-5. Alert generation: Low-priority initial alert, escalates based on duration
+**How It Works:**
+- System learns daily activity baseline (normal movement patterns throughout the day)
+- Continuously compares current activity to learned baseline
+- **Alert Trigger:** Activity significantly lower than normal for extended period (>6 hours)
+- **Context:** Excludes normal sleep hours
+- **Result:** Low-priority alert initially, escalates if inactivity continues
+
+**Expected Performance:** >85% detection accuracy
 
 ### 5.4 Data Processing Pipeline
 
-**Stage 1: Data Acquisition (Edge Layer)**
-- Sensor sampling rate: 1 Hz (1 reading per second)
-- Local buffering: 5-minute windows before transmission
-- Data format: JSON with timestamp, sensor_id, value, unit
-- Preprocessing: Outlier removal (3-sigma rule), missing value imputation (forward-fill)
+**Step 1: Data Collection**
+- Sensors continuously collect data (temperature, motion, electricity, gas)
+- Edge device (Raspberry Pi) collects and temporarily stores sensor readings
+- Data sent securely to cloud every few minutes
 
-**Stage 2: Feature Engineering**
-- **Temporal features:**
-  - Hour of day (sine/cosine encoding for cyclical nature)
-  - Day of week (one-hot encoding)
-  - Weekend/weekday indicator
-- **Statistical features (15-minute windows):**
-  - Mean, standard deviation, min, max for each sensor
-  - Trend: linear regression slope
-  - Variance ratio: current window vs. historical average
-- **Cross-sensor features:**
-  - Correlation coefficient: motion vs. electricity consumption
-  - Lag features: temperature vs. motion (1-hour lag)
+**Step 2: Pattern Analysis**
+- AI models analyze the data to understand normal patterns
+- System learns daily routines over 4-6 weeks
+- Creates personalized baseline for each person
 
-**Stage 3: Model Inference**
-- Real-time inference: Every 15 minutes on rolling windows
-- Batch inference: Daily pattern analysis for baseline updates
-- Model versioning: A/B testing for model improvements
-- Performance monitoring: Track inference latency (<500ms target)
+**Step 3: Anomaly Detection**
+- System continuously compares current readings to learned baseline
+- When patterns deviate significantly, anomaly is detected
+- Risk score calculated based on severity of deviation
 
-**Stage 4: Alert Generation**
-- Risk score thresholding:
-  - Low alert: Risk score 0.6-0.7 (email notification)
-  - Medium alert: Risk score 0.7-0.8 (SMS notification)
-  - High alert: Risk score >0.8 (SMS + phone call)
-- Deduplication: Suppress repeated alerts for same event within 1-hour window
-- Escalation: If high-priority alert unacknowledged for >30 minutes, notify emergency contact
+**Step 4: Alert Generation**
+- If risk score exceeds threshold, alert is generated
+- Alert level determines notification method (email, SMS, or phone call)
+- Family/caregivers receive notification within 2 minutes
 
-### 5.5 Technical Implementation Details
+### 5.5 Implementation Details
 
-**Hardware Specifications:**
-- Edge Device: Raspberry Pi 4 Model B (4GB RAM, 32GB microSD)
-- Sensors:
-  - Temperature: DHT22 (±0.5°C accuracy, -40 to 80°C range, €5/unit)
-  - Motion: HC-SR501 PIR sensor (3-7m range, 120° detection angle, €3/unit)
-  - Gas: MQ-2 (LPG, propane, methane) or MQ-5 (natural gas), €4/unit
-  - Electricity: TP-Link HS110 smart plug (WiFi, energy monitoring, €25/unit)
-- Network: WiFi 802.11n router (minimum requirement)
+**Hardware:**
+- **Sensors:** Temperature sensors, motion sensors, gas detectors, smart plugs
+- **Edge Device:** Raspberry Pi (small computer that processes data locally)
+- **Cost:** Approximately €150-200 per household (one-time setup)
 
-**Software Stack:**
-- Operating System: Raspberry Pi OS (Debian-based, Linux 5.15+)
-- Programming: Python 3.10+
-- ML Frameworks: TensorFlow 2.12, scikit-learn 1.3.0
-- Data Processing: Pandas 2.0, NumPy 1.24
-- Communication: paho-mqtt (MQTT protocol), requests (HTTP API)
-- Database: PostgreSQL 15 (cloud), InfluxDB 2.7 (time-series)
-- Web Framework: FastAPI (backend API), React.js (frontend dashboard)
-- Deployment: Docker containers, Kubernetes (cloud orchestration)
+**Software:**
+- **AI Models:** Python-based machine learning models (LSTM, anomaly detection)
+- **Cloud:** Luxembourg-based cloud storage for data and processing
+- **Dashboard:** Web and mobile app for families to monitor status
+- **Monthly Cost:** Approximately €20-35 per household (cloud services, SMS alerts)
 
-**Security Implementation:**
-- Data Encryption:
-  - In-transit: TLS 1.3 for all network communications
-  - At-rest: AES-256 encryption for database storage
-- Authentication: OAuth 2.0 for dashboard access, API key rotation every 90 days
-- Access Control: Role-based access (elderly user, family member, caregiver, administrator)
-- Audit Logging: All data access events logged for compliance
-
-**Cost Estimates (Per Household):**
-- Hardware: €150-200 (one-time)
-- Cloud infrastructure: €15-25/month (data storage, compute, API services)
-- Communication: €5-10/month (SMS alerts)
-- **Total per household: €170-235 one-time + €20-35/month**
+**Security:**
+- All data encrypted during transmission and storage
+- No personal information collected (only sensor readings)
+- Secure access controls for family/caregivers
 
 ---
 
@@ -690,75 +600,14 @@ Where:
 
 ### Academic References
 
-1. **Gabrielli, D., Prenkaj, B., Velardi, P., & Faralli, S. (2025).** AI on the Pulse: Real-Time Health Anomaly Detection with Wearable and Ambient Intelligence. *arXiv preprint arXiv:2508.03436.*
-   - **Relevance:** Provides framework for real-time health anomaly detection combining wearable and ambient sensors, applicable to our elderly monitoring approach.
+1. **Shahid, Z. K., Saguna, S., & Åhlund, C. (2024).** Detecting Anomalies in Daily Activity Routines of Older Persons in Single Resident Smart Homes: Proof-of-Concept Study. *JMIR Aging, 7, e58394.*
+   - **Relevance:** Validates anomaly detection in smart home environments for elderly, demonstrating feasibility of non-wearable sensor approaches. Directly applicable to our project's methodology.
 
-2. **Shahid, Z. K., Saguna, S., & Åhlund, C. (2024).** Detecting Anomalies in Daily Activity Routines of Older Persons in Single Resident Smart Homes: Proof-of-Concept Study. *JMIR Aging, 7, e58394.*
-   - **Relevance:** Validates anomaly detection in smart home environments for elderly, demonstrating feasibility of non-wearable sensor approaches.
+2. **An Innovative IoT and Edge Intelligence Framework for Monitoring Elderly People Using Anomaly Detection on Data from Non-Wearable Sensors. (2024).** *PubMed ID: 40292837.*
+   - **Relevance:** Directly applicable framework for non-wearable sensor monitoring of elderly populations using anomaly detection, matching our system architecture and approach.
 
 3. **Reddy, M. V. K., Lathigara, A., & Reddy, N. H. (2025).** Anomaly Detection in IoT based Smart Home Networks Using Hybrid Ensemble and CNN Models. *International Journal of Environmental Sciences, 11(23s), 3678-3687.*
-   - **Relevance:** Demonstrates ensemble approaches for anomaly detection in IoT smart homes, supporting our multi-algorithm methodology.
-
-4. **Meidan, Y., Avraham, D., Libhaber, H., & Shabtai, A. (2023).** CADeSH: Collaborative Anomaly Detection for Smart Homes. *arXiv preprint arXiv:2303.01021.*
-   - **Relevance:** Presents collaborative anomaly detection framework applicable to multi-sensor elderly monitoring systems.
-
-5. **Saha, B., Islam, M. S., Riad, A. K., Tahora, S., Shahriar, H., & Sneha, S. (2023).** BlockTheFall: Wearable Device-based Fall Detection Framework Powered by Machine Learning and Blockchain for Elderly Care. *arXiv preprint arXiv:2306.06452.*
-   - **Relevance:** While focused on wearables, provides insights into ML-based fall detection algorithms transferable to non-wearable approaches.
-
-6. **de Arriba-Pérez, F., García-Méndez, S., González-Castaño, F. J., & Costa-Montenegro, E. (2024).** Automatic detection of cognitive impairment in elderly people using an entertainment chatbot with Natural Language Processing capabilities. *arXiv preprint arXiv:2405.18542.*
-   - **Relevance:** Demonstrates AI applications for elderly health monitoring, highlighting importance of non-intrusive approaches.
-
-7. **Al-Rakhami, M. S., Gumaei, A., Altaf, M., Hassan, M. M., Alkhamees, B. F., Muhammad, K., & Fortino, G. (2021).** FallDeF5: A Fall Detection Framework Using 5G-based Deep Gated Recurrent Unit Networks. *arXiv preprint arXiv:2106.15049.*
-   - **Relevance:** Validates GRU networks for fall detection, supporting our time-series analysis methodology.
-
-### Luxembourg-Specific References
-
-8. **STATEC (Institut national de la statistique et des études économiques du Grand-Duché de Luxembourg). (2024).** Population Statistics - Age Distribution. Luxembourg: STATEC.
-   - **Relevance:** Provides demographic data on Luxembourg's aging population (19.5% over 65 years).
-
-9. **Luxembourg National Commission for Data Protection (CNPD). (2024).** Artificial Intelligence and Data Protection: An Introduction. Retrieved from: https://cnpd.public.lu/en/dossiers-thematiques/intelligence-artificielle/intelligence-artificielle-introduction.html
-   - **Relevance:** Official guidance on AI deployment and GDPR compliance in Luxembourg context.
-
-10. **Luxembourg Digital Innovation Center (LUDCI). (2024).** Artificial Intelligence in Healthcare: Advancements and Challenges in Luxembourg. Retrieved from: https://ludci.eu/magazine/artificial-intelligence-in-healthcare-advancements-and-challenges-in-luxembourg/
-    - **Relevance:** Contextualizes AI healthcare applications within Luxembourg's policy and regulatory environment.
-
-### Technical Methodology References
-
-11. **Hochreiter, S., & Schmidhuber, J. (1997).** Long Short-Term Memory. *Neural Computation, 9(8), 1735-1780.*
-    - **Relevance:** Foundational paper on LSTM networks used for time-series pattern learning.
-
-12. **Liu, F. T., Ting, K. M., & Zhou, Z.-H. (2008).** Isolation Forest. *2008 Eighth IEEE International Conference on Data Mining*, 413-422.
-    - **Relevance:** Original Isolation Forest algorithm for anomaly detection, one of our core ML components.
-
-13. **Schölkopf, B., Platt, J. C., Shawe-Taylor, J., Smola, A. J., & Williamson, R. C. (2001).** Estimating the Support of a High-Dimensional Distribution. *Neural Computation, 13(7), 1443-1471.*
-    - **Relevance:** Foundational work on One-Class SVM, used in our anomaly detection ensemble.
-
-14. **Vincent, P., Larochelle, H., Bengio, Y., & Manzagol, P.-A. (2008).** Extracting and Composing Robust Features with Denoising Autoencoders. *Proceedings of the 25th International Conference on Machine Learning*, 1096-1103.
-    - **Relevance:** Autoencoder approach for anomaly detection via reconstruction error.
-
-### GDPR and Privacy References
-
-15. **European Union. (2016).** Regulation (EU) 2016/679 - General Data Protection Regulation (GDPR). *Official Journal of the European Union, L 119/1.*
-    - **Relevance:** Primary legal framework for data protection compliance, specifically Articles 6, 9, and Chapter III (user rights).
-
-16. **European Commission. (2021).** Proposal for a Regulation on Artificial Intelligence (AI Act). *COM/2021/206 final.*
-    - **Relevance:** Emerging regulatory framework for AI systems, relevant for classification of our monitoring system.
-
-17. **CNPD. (2024).** AI Prohibited Practices and High-Risk AI Systems. Retrieved from: https://cnpd.public.lu/en/dossiers-thematiques/intelligence-artificielle/regulation-ia/ia-prohibes.html
-    - **Relevance:** Luxembourg-specific guidance on AI Act implementation and prohibited AI practices.
-
-### IoT and Sensor Technology References
-
-18. **An Innovative IoT and Edge Intelligence Framework for Monitoring Elderly People Using Anomaly Detection on Data from Non-Wearable Sensors. (2024).** *PubMed ID: 40292837.*
-    - **Relevance:** Directly applicable framework for non-wearable sensor monitoring of elderly populations.
-
-19. **Anomaly Detection in Elderly Health Monitoring via IoT for Timely Interventions. (2024).** *Applied Sciences, 15(13), 7272.*
-    - **Relevance:** Validates IoT-based anomaly detection for elderly health monitoring and intervention timing.
-
-### Additional Suggested Readings
-
-20. **GDPR Advisor. (2024).** GDPR and IoT Devices: Addressing Privacy Concerns in the Connected World. Retrieved from: https://www.gdpr-advisor.com/gdpr-and-iot-devices-addressing-privacy-concerns-in-the-connected-world/
-    - **Relevance:** Practical guidance on GDPR compliance for IoT devices in healthcare contexts.
+   - **Relevance:** Demonstrates ensemble approaches for anomaly detection in IoT smart homes, supporting our multi-algorithm methodology for combining different anomaly detection techniques.
 
 ---
 

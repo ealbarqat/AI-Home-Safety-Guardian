@@ -135,18 +135,20 @@ They prefer independent living but you worry:
 
 ---
 
-### SLIDE 7: AI/ML Technology - Technical Details
+### SLIDE 7: AI/ML Technology - How It Works
 
-**Time-Series Analysis:**
-- **LSTM/GRU networks** learn daily activity patterns
-- Establishes individualized behavioral baselines
-- 4-6 week learning period per household
+**Pattern Learning:**
+- System learns each person's normal daily patterns over 4-6 weeks
+- Uses **LSTM (Long Short-Term Memory)** networks to understand:
+  - When they typically wake up and go to sleep
+  - Normal movement patterns throughout the day
+  - Typical electricity usage (cooking times, TV watching, etc.)
+  - Normal temperature variations in the home
 
 **Anomaly Detection:**
-- **Isolation Forest** - detects outliers
-- **One-Class SVM** - models normal behavior
-- **Autoencoders** - learns compressed representations
-- **Ensemble approach** - combines all three for robustness
+- System continuously compares current readings to learned baseline
+- Uses **anomaly detection algorithms** to identify when something is unusual
+- Combines multiple methods for more reliable detection
 
 **Result: >90% detection accuracy with <5% false positives**
 
@@ -431,21 +433,22 @@ Monitor **environmental conditions** (not people) to detect anomalies that indic
 
 ### SLIDE 7: Technical Methodology - AI/ML Components
 
-**1. Time-Series Pattern Learning:**
-- **LSTM (Long Short-Term Memory) networks**
-- **GRU (Gated Recurrent Units)**
-- Learn daily activity patterns from sensor data
-- Establishes individualized behavioral baselines (4-6 weeks)
+**1. Pattern Learning:**
+- System learns each person's normal daily patterns over 4-6 weeks
+- Uses **LSTM (Long Short-Term Memory)** networks to understand:
+  - When they typically wake up and go to sleep
+  - Normal movement patterns throughout the day
+  - Typical electricity usage (cooking times, TV watching, etc.)
+  - Normal temperature variations in the home
 
-**2. Anomaly Detection Ensemble:**
-- **Isolation Forest** - Detects outliers in multi-dimensional data
-- **One-Class SVM** - Models normal behavior boundaries
-- **Autoencoders** - Learns compressed representations
+**2. Anomaly Detection:**
+- System continuously compares current sensor readings to learned baseline
+- Uses **anomaly detection algorithms** to identify when something is unusual
+- Combines multiple methods for more reliable detection
 
 **3. Risk Scoring:**
-- Composite risk score (0.0-1.0)
-- Combines multiple sensor signals
-- Multi-level alert thresholds
+- Combines information from all sensors to calculate a risk score (0-1 scale)
+- Multi-level alert thresholds (Low, Medium, High)
 
 ---
 
@@ -473,20 +476,19 @@ Monitor **environmental conditions** (not people) to detect anomalies that indic
 
 ### SLIDE 9: Implementation Details
 
-**Hardware Specifications:**
-- Edge Device: Raspberry Pi 4 (4GB RAM)
-- Sensors: DHT22 (temp), HC-SR501 (motion), MQ-2 (gas), HS110 (electricity)
-- Cost per household: €150-200 one-time + €20-35/month
+**Hardware:**
+- **Sensors:** Temperature sensors, motion sensors, gas detectors, smart plugs
+- **Edge Device:** Raspberry Pi (small computer that processes data locally)
+- **Cost:** Approximately €150-200 per household (one-time setup)
 
-**Software Stack:**
-- ML Framework: TensorFlow 2.12, scikit-learn 1.3.0
-- Edge: Python 3.10+, Raspberry Pi OS
-- Cloud: AWS EU-Central-1 (Luxembourg-based)
-- Dashboard: React.js web app, React Native mobile app
+**Software:**
+- **AI Models:** Python-based machine learning models (LSTM, anomaly detection)
+- **Cloud:** Luxembourg-based cloud storage for data and processing
+- **Dashboard:** Web and mobile app for families to monitor status
+- **Monthly Cost:** Approximately €20-35 per household (cloud services, SMS alerts)
 
 **Performance:**
-- Inference latency: <500ms
-- Alert generation: <2 minutes
+- Alert generation: <2 minutes from anomaly detection
 - System uptime: 99.5% target
 
 ---
